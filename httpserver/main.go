@@ -27,7 +27,6 @@ func main() {
 func rootHandler(writer http.ResponseWriter, request *http.Request) {
 	headers := request.Header
 	for k, v := range headers {
-		log.Println(k, v)
 		writer.Header().Add(k, strings.Join(v, ", "))
 	}
 	os.Setenv("VERSION", "0.0.1")
