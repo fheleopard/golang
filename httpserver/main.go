@@ -16,6 +16,7 @@ type loggingResponseWriter struct {
 }
 
 func main() {
+	os.Setenv("VERSION", "0.0.1")
 	http.Handle("/", wrapHandlerWithLogging(http.HandlerFunc(rootHandler)))
 	http.Handle("/healthz", wrapHandlerWithLogging(http.HandlerFunc(healthzHandler)))
 	err := http.ListenAndServe("localhost:8080", nil)
@@ -25,12 +26,6 @@ func main() {
 }
 
 func rootHandler(writer http.ResponseWriter, request *http.Request) {
-	headers := request.Header
-	for k, v := range headers {
-		writer.Header().Add(k, strings.Join(v, ", "))
-	}
-	os.Setenv("VERSION", "0.0.1")
-	writer.Header().Add("VERSION", os.Getenv("VERSION"))
 }
 
 func healthzHandler(writer http.ResponseWriter, request *http.Request) {
@@ -64,6 +59,12 @@ func getIp(request *http.Request) (string, error) {
 
 func wrapHandlerWithLogging(wrappedHandler http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
+		headers := req.Header
+		for k, v := range headers {
+			w.Header().Add(k, strings.Join(v, ", "))
+		}
+		w.Header().Add("VERSION", os.Getenv("VERSION"))
+
 		ip, err := getIp(req)
 		if err != nil {
 			log.Fatal(err)
