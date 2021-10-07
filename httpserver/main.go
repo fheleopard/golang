@@ -25,29 +25,13 @@ func main() {
 }
 
 func rootHandler(writer http.ResponseWriter, request *http.Request) {
-	message := []byte("1.接收客户端 request，并将 request 中带的 header 写入 response header:\n-------------------------\n")
-	_, err := writer.Write(message)
-	if err != nil {
-		log.Fatal(err)
-	}
 	headers := request.Header
 	for k, v := range headers {
-		_, err := writer.Write([]byte(k + ": " + strings.Join(v, ", ") + "\n"))
-		if err != nil {
-			log.Fatal(err)
-		}
-	}
-
-	message = []byte("\n2.读取当前系统的环境变量中的 VERSION 配置，并写入 response header:\n-------------------------\n")
-	_, err = writer.Write(message)
-	if err != nil {
-		log.Fatal(err)
+		log.Println(k, v)
+		writer.Header().Add(k, strings.Join(v, ", "))
 	}
 	os.Setenv("VERSION", "0.0.1")
-	_, err = io.WriteString(writer, "VERSION="+os.Getenv("VERSION"))
-	if err != nil {
-		log.Fatal(err)
-	}
+	writer.Header().Add("VERSION", os.Getenv("VERSION"))
 }
 
 func healthzHandler(writer http.ResponseWriter, request *http.Request) {
